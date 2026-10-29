@@ -150,6 +150,19 @@ a hard test: the onset channels stand out in two of four clips. Expect better se
 the bipolar montage of ieeg-prep and on longer interictal recordings, and do not read a
 single clip's HFO ranking as a localisation.
 
+**ieeg-prep output** (`data/work/prep/ieeg` of workflow-epilepsy-ieeg: all 24 demo clips,
+bipolar montage, 1024 Hz so ripples only, `SEGMENT=baseline`: ieeg-prep's pre-ictal baseline
+of up to 90 s). Ripple rate in channels labelled `onset=true` in `_channels.tsv` vs the others:
+
+| Detector | AUC, median (IQR) | AUC > 0.5 | median rate, onset vs other | mean rate per channel |
+|---|---|---|---|---|
+| `linelength` | **0.78** (0.61–0.92) | 19 of 24 | 2.2 vs 0.7 /min | 2.3 /min |
+| `rms` | 0.81 (0.60–0.88) | 19 of 24 | 1.3 vs 0.0 /min | 0.9 /min |
+| `cs` | 0.65 (0.50–0.76) | 18 of 24 | 1.3 vs 0.0 /min | 6.7 /min |
+
+On the bipolar montage the onset channels stand out clearly better than on the referential
+clips above.
+
 **HUP atlas** (200 Hz): all 60 recordings are skipped with `skipped: sampling rate 200 Hz <
 1000`, empty tables, exit 0, as designed.
 
