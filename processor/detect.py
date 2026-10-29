@@ -82,18 +82,67 @@ def staba_criteria(y: np.ndarray, events: list[list[int]], fs: float, min_durati
     return keep
 
 
+def _window_energy(y: np.ndarray, detector: str, ws: int, inc: int) -> np.ndarray:
+    """
+    epycom's windowed line length / RMS, every window at once. epycom's detectors call
+    compute_line_lenght / compute_rms on y[i*inc : i*inc+ws] in a Python loop, one window at a
+    time (most of v0.1.0's run time), and keep element 0 of the result, which is
+      line length: sum(|diff(y)|[i*inc : i*inc + ws//2 + 1]) / ws
+      RMS:         sqrt(sum(y[i*inc : i*inc + (ws-1)//2 + 1]^2) / ws)
+    (a full / 'same'-mode convolution with a box of ws, read at index 0). The windows run while
+    their start is inside y and stop at the first that reaches its end; that last one may be
+    cut short, so it is computed by epycom's own function on the same slice. Same values to
+    floating-point rounding (tests/test_detect_fast.py).
+    """
+    from epycom.utils.signal_transforms import compute_line_lenght, compute_rms
+
+    n = len(y)
+    nw = 1 if n <= ws else -(-(n - ws) // inc) + 1
+    if detector == "linelength":
+        src, m = np.abs(np.diff(y)), ws // 2 + 1
+    else:
+        src, m = np.square(y), (ws - 1) // 2 + 1
+    vals = np.empty(nw)
+    if nw > 1:
+        windows = np.lib.stride_tricks.sliding_window_view(src, m)[: (nw - 1) * inc: inc]
+        vals[:-1] = (windows * (1.0 / ws)).sum(axis=1)
+        if detector != "linelength":
+            np.sqrt(vals[:-1], out=vals[:-1])
+    last = y[(nw - 1) * inc: n]
+    vals[-1] = (compute_line_lenght(last, ws) if detector == "linelength" else compute_rms(last, ws))[0]
+    return vals
+
+
+def _epycom_events(y: np.ndarray, detector: str, threshold: float, ws: int, inc: int) -> list[tuple[int, int]]:
+    """epycom 0.3's detect_hfo_ll / detect_hfo_rms, vectorised: the same windows, threshold and events."""
+    from epycom.utils.thresholds import th_std
+
+    vals = _window_energy(y, detector, ws, inc)
+    above = vals >= th_std(vals, threshold)
+    if not above.any():
+        return []
+    edges = np.diff(np.concatenate(([0], above.astype(np.int8), [0])))
+    first = np.flatnonzero(edges == 1)           # first window of each run above the threshold
+    after = np.flatnonzero(edges == -1)          # the window after the run
+    stops = np.minimum(after * inc + ws, len(y))
+    return [(int(s), int(e)) for s, e in zip(first * inc, stops)]
+
+
 def energy_events(y: np.ndarray, fs: float, detector: str, window_ms: float, threshold: float) -> list[list[int]]:
     """epycom line-length / RMS detection on a band-passed signal; returns [start, stop) samples."""
-    from epycom.event_detection.hfo.ll_detector import detect_hfo_ll
-    from epycom.event_detection.hfo.rms_detector import detect_hfo_rms
-
     w = max(2, int(round(window_ms / 1000.0 * fs)))      # effective window, samples
     ws = 2 * w                                           # what epycom is given (it measures the first half)
     step = max(1, w // 2)
     overlap = step / ws                                  # epycom: increment = ceil(ws * overlap)
     inc = int(math.ceil(ws * overlap))
-    fn = detect_hfo_ll if detector == "linelength" else detect_hfo_rms
-    raw = fn(y, fs=int(round(fs)), threshold=threshold, window_size=ws, window_overlap=overlap)
+    if len(y) < 4 * ws:                                  # a few windows only: epycom itself
+        from epycom.event_detection.hfo.ll_detector import detect_hfo_ll
+        from epycom.event_detection.hfo.rms_detector import detect_hfo_rms
+
+        fn = detect_hfo_ll if detector == "linelength" else detect_hfo_rms
+        raw = fn(y, fs=int(round(fs)), threshold=threshold, window_size=ws, window_overlap=overlap)
+    else:
+        raw = _epycom_events(y, detector, threshold, ws, inc)
     out = []
     for start, stop in raw:
         stop_eff = min(len(y), max(start + w, stop - w - inc))  # end of the last window above threshold

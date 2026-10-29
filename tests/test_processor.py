@@ -69,7 +69,7 @@ def test_outputs_and_provenance(default_run):
         with open(default_run / name) as fh:
             assert next(csv.reader(fh)) == header
     prov = json.loads((default_run / "provenance.json").read_text())
-    assert prov["app"] == "processor-ieeg-hfo" and prov["version"] == "0.1.0" and prov["status"] == "ok"
+    assert prov["app"] == "processor-ieeg-hfo" and prov["version"] == "0.1.1" and prov["status"] == "ok"
     assert prov["resolved"]["threshold"] == 3.0 and prov["resolved"]["window_ms"] == 5.0
     st = statuses(default_run)
     assert st[REC1] == "ok" and st[REC2] == "ok"

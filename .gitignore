@@ -1,5 +1,5 @@
 # local data: fixtures, outputs and real recordings
-data/
+/data/
 *.edf
 *.EDF
 

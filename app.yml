@@ -18,10 +18,11 @@ application:
     - hfo
     - event-detection
 runtime:
-  # Channels in parallel (THREADS), one 5-minute window of all good channels at a time.
-  # ~0.3 s CPU per channel-minute per band natively (more under amd64 emulation); a 1 h,
-  # 128-channel recording at 1024 Hz (ripples only) is ~20 min on 2 vCPU. See README "Runtime".
-  cpu: 2048
+  # One 5-minute window of all good channels at a time, channels in parallel (THREADS).
+  # linelength / rms: ~3 ms CPU per channel-minute per band (amd64 emulated); the 24 demo
+  # clips (15,353 channel-minutes) take 50 s on 1 vCPU. cs is slower (~0.3 s per
+  # channel-minute). 4 GiB for windows of 256+ channels at 2 kHz. See README "Runtime".
+  cpu: 1024
   memory: 4096
   computeTypes:
     - standard

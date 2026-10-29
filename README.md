@@ -107,27 +107,36 @@ recording gets **ripples only**, with a note in `provenance.json`. Between 1000 
 
 ## Runtime
 
-`computeTypes: [standard]`, **2 vCPU / 4 GiB**, 6 h timeout. Channels run in parallel
+`computeTypes: [standard]`, **1 vCPU / 4 GiB**, 6 h timeout. Channels run in parallel
 (`THREADS`, default one per vCPU); memory is bounded by the window, not the recording length.
-The cost is CPU: epycom slides the line-length / RMS window in a Python loop.
 
-Measured in Docker (linux/amd64 **emulated** on an M-series Mac, `--cpus 2 --memory 4g`) on 4
-seizure clips of the demo dataset (Multi-Expert Seizure Annotation, 1024 Hz, so ripples only;
-as-recorded referential montage: HUP224 230 channels × 338 s, HUP230 106 × 384 s, HUP250
-170 × 296 s, HUP257 118 × 463 s), default `linelength`:
+v0.1.1 computes epycom's windowed line length / RMS for all windows of a channel at once
+(NumPy sliding windows) instead of in epycom's Python loop, which was ~98% of v0.1.0's time
+(cProfile: 49 M calls of epycom's per-window function for 3 recordings). The windows, the
+threshold and the events are epycom's (its own function still computes the last, possibly
+shorter, window), and `hfo.csv` / `hfo_rates.csv` are byte-identical to v0.1.0 on all 24 demo
+clips for `linelength` and `rms` (tests/test_detect_fast.py checks against epycom itself and
+against v0.1.0's output on the synthetic fixture). The time left is band-pass filtering
+(`sosfiltfilt`), the Staba peak criteria, reading, and starting Python. `cs` is epycom's CS
+detector unchanged, about 0.3 CPU-s per channel-minute natively as before.
 
-| Run | Analysed | CPU time | Wall time | Peak memory (cgroup `memory.peak`) |
-|---|---|---|---|---|
-| whole recordings (`EXCLUDE_SEIZURE=false`) | 24.7 min, 3,725 channel-minutes | 1,706 s | 895 s | 1.46 GB |
-| 120 s pre-ictal baselines (`SEGMENT=baseline`) | 8.0 min, 1,248 channel-minutes | 481 s | 249 s | 1.50 GB |
-| HUP atlas, 60 recordings at 200 Hz (all skipped) | — | — | 7 s | — |
+Measured in Docker (linux/amd64 **emulated** on an M-series Mac), default `linelength`, ieeg-prep
+output of the demo dataset (Multi-Expert Seizure Annotation, bipolar, 1024 Hz, so ripples only):
 
-`memory.peak` includes the page cache of the EDF files read. About 0.46 CPU-seconds per
-channel-minute per band emulated, ~0.29 natively (M-series, measured per channel; `rms` and
-`cs` cost about the same, 1.4–1.7 s per 5 channel-minutes natively). Expected on real amd64
-hardware: a 1 h, 128-channel recording at 1024 Hz (ripples) ≈ 40 CPU-minutes ≈ 20 min on 2
-vCPU; at 2048 Hz with both bands about four times that, well inside the 6 h timeout. More
-vCPUs scale nearly linearly (`THREADS`). The image is ~200 MB compressed (~840 MB unpacked).
+| Run | Analysed | `--cpus` / `--memory` | CPU time | Wall time | Peak memory (cgroup `memory.peak`) |
+|---|---|---|---|---|---|
+| v0.1.0, 3 clips (HUP224 186 ch, HUP230 95 ch, HUP250 151 ch; seizures left out) | 11.1 min, 1,602 channel-minutes | 2 / 4g | 322 s | 166 s | 1.42 GB |
+| v0.1.1, the same 3 clips | the same | 2 / 4g | 14 s | 9.4 s | 1.18 GB |
+| v0.1.1, the same 3 clips | the same | 1 / 2g | 9 s | 9.6 s | 0.78 GB |
+| v0.1.1, all 24 clips (`EXCLUDE_SEIZURE=false`) | 129 min, 15,353 channel-minutes | 1 / 2g | 49 s | 50 s | 2.13 GB |
+| v0.1.1, all 24 clips (`EXCLUDE_SEIZURE=false`) | the same | 2 / 4g | 57 s | 35 s | 2.67 GB |
+
+`memory.peak` includes the page cache of the EDF files read (1.8 GB for the 24 clips). About
+3 ms of CPU per channel-minute per band under emulation (v0.1.0: ~200 ms), so a 1 h,
+128-channel recording at 1024 Hz takes well under a minute on 1 vCPU, and 2048 Hz with both
+bands about four times that; a second vCPU mostly pays for Python start-up. With `cs`, plan
+~0.3 CPU-s per channel-minute per band (a 1 h, 128-channel recording ≈ 40 min on 1 vCPU; set
+more vCPUs for long `cs` runs). The image is ~200 MB compressed (~840 MB unpacked).
 
 ## Results on real data
 
