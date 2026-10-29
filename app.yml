@@ -1,0 +1,137 @@
+# yaml-language-server: $schema=https://schemas.pennsieve.io/app-manifest/v1.json
+schemaVersion: "1.0"
+application:
+  name: iEEG HFO
+  description: >-
+    Detects high-frequency oscillations (ripples 80-250 Hz, fast ripples 250-500 Hz) on every
+    good channel of intracranial EEG with epycom's line-length (Gardner et al. 2007), RMS
+    (Staba et al. 2002) or CS (Cimbálník et al. 2018) detector, and writes each HFO and the
+    rate per channel per minute analysed. Recordings sampled below 1000 Hz are skipped by design.
+  type: processor
+  tags:
+    - ieeg
+    - seeg
+    - ecog
+    - electrophysiology
+    - epilepsy
+    - neuroscience
+    - hfo
+    - event-detection
+runtime:
+  # Channels in parallel (THREADS), one 5-minute window of all good channels at a time.
+  # ~0.3 s CPU per channel-minute per band natively (more under amd64 emulation); a 1 h,
+  # 128-channel recording at 1024 Hz (ripples only) is ~20 min on 2 vCPU. See README "Runtime".
+  cpu: 2048
+  memory: 4096
+  computeTypes:
+    - standard
+  timeoutSeconds: 21600
+parameters:
+  - name: DETECTOR
+    type: string
+    label: Detector
+    description: >-
+      linelength: line length of the band-passed signal (Gardner et al. 2007) with the Staba
+      2002 event criteria. rms: root mean square of the band-passed signal (Staba et al. 2002)
+      with the same criteria. cs: the CS algorithm (Cimbálník et al. 2018), which models each
+      of its frequency bands' statistics on the broadband signal.
+    defaultValue: linelength
+    validValues: [linelength, rms, cs]
+  - name: BANDS
+    type: string
+    label: Bands
+    description: >-
+      Comma-separated: ripple (80-250 Hz), fast_ripple (250-500 Hz). A band is analysed only
+      when its upper edge is below Nyquist; fast ripples also need FAST_RIPPLE_MIN_SFREQ.
+    defaultValue: ripple,fast_ripple
+  - name: MIN_SFREQ
+    type: number
+    label: Minimum sampling rate (Hz)
+    description: >-
+      Recordings sampled below this are not analysed: they are listed in provenance.json as
+      "skipped: sampling rate X Hz < MIN_SFREQ" and the run still succeeds.
+    defaultValue: 1000
+    min: 500
+  - name: FAST_RIPPLE_MIN_SFREQ
+    type: number
+    label: Minimum sampling rate for fast ripples (Hz)
+    description: >-
+      Fast ripples are analysed only at or above this rate. At 1024 Hz the 500 Hz band edge is
+      just below Nyquist and inside most amplifiers' anti-aliasing roll-off; set 1000 to force.
+    defaultValue: 2000
+    min: 1000
+  - name: THRESHOLD
+    type: string
+    label: Threshold
+    description: >-
+      auto, or a number: SD above the mean of the line length (auto 3) or RMS (auto 5, Staba
+      2002) in the window; for cs its detection threshold between 0 and 1 (auto 0.1).
+    defaultValue: auto
+  - name: WINDOW_MS
+    type: string
+    label: Energy window (ms)
+    description: auto (line length 5 ms, RMS 3 ms as in Staba 2002) or a number of milliseconds. Not used by cs.
+    defaultValue: auto
+  - name: MIN_DURATION_MS
+    type: number
+    label: Minimum duration (ms)
+    description: Shortest event kept by linelength and rms (Staba 2002 used 6 ms; the 6-peak criterion also applies).
+    defaultValue: 6
+    min: 0
+  - name: SEGMENT
+    type: string
+    label: Part of the recording
+    description: >-
+      all: the whole recording. baseline: only the baseline interval of recordings.csv (or a
+      `baseline` event); recordings without one are analysed whole (noted in provenance.json).
+    defaultValue: all
+    validValues: [all, baseline]
+  - name: EXCLUDE_SEIZURE
+    type: boolean
+    label: Leave seizures out
+    description: >-
+      Leave known seizures out (recordings.csv onset_s, `seizure` events), with
+      SEIZURE_MARGIN_S on both sides; a seizure without a known end is cut to the end of the recording.
+    defaultValue: true
+  - name: SEIZURE_MARGIN_S
+    type: number
+    label: Seizure margin (s)
+    description: Seconds left out before the seizure onset and after its end.
+    defaultValue: 10
+    min: 0
+  - name: WINDOW_S
+    type: number
+    label: Window (s)
+    description: >-
+      Length of the windows the recording is read and analysed in (all good channels at once,
+      2 s of context on each side); detection thresholds are computed per window and channel.
+    defaultValue: 300
+    min: 30
+  - name: THREADS
+    type: integer
+    label: Parallel workers
+    description: Channels analysed in parallel; 0 = one per vCPU.
+    defaultValue: 0
+    min: 0
+  - name: LABEL
+    type: string
+    label: Output subfolder
+    description: When set, outputs are written to OUTPUT_DIR/<LABEL>/ (for a workflow that runs this step twice).
+    defaultValue: ""
+inputs:
+  - name: ieeg
+    description: >-
+      The BIDS-iEEG derivative of ieeg-prep (recordings.csv, *_desc-preproc_ieeg.edf with
+      channels.tsv and events.tsv), or any BIDS-iEEG dataset, or plain EDF/BDF/BrainVision/FIF/
+      EEGLAB files. Sampled at >= MIN_SFREQ to be analysed. Folders and symlinks are followed.
+    placement: root
+    required: true
+outputs:
+  - name: hfo
+    description: >-
+      hfo.csv (recording_id, channel, start_s, end_s, band, detector, amplitude_uv),
+      hfo_rates.csv (recording_id, channel, band, n_hfo, minutes, rate_per_min, detector) and
+      provenance.json (per recording status, including "skipped: sampling rate ...").
+    mediaTypes:
+      - text/csv
+      - application/json

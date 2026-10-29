@@ -1,0 +1,243 @@
+cff-version: "1.2.0"
+message: If you use this app, please cite it and the works it builds on, listed under references.
+type: software
+title: iEEG HFO
+abstract: 'Detects high-frequency oscillations (ripples and fast ripples) on every good channel of intracranial EEG with epycom''s line-length, RMS or CS detector and writes the events and rates per channel; recordings sampled below 1000 Hz are skipped by design.'
+authors:
+- name: Pennsieve (University of Pennsylvania)
+repository-code: https://github.com/pennsieve-apps/processor-ieeg-hfo
+license: Apache-2.0
+keywords:
+- ieeg
+- seeg
+- ecog
+- electrophysiology
+- epilepsy
+- neuroscience
+- hfo
+- event-detection
+references:
+- type: article
+  title: Human and automated detection of high-frequency oscillations in clinical intracranial EEG recordings
+  authors:
+  - family-names: Gardner
+    given-names: Andrew B.
+  - family-names: Worrell
+    given-names: Greg A.
+  - family-names: Marsh
+    given-names: Eric
+  - family-names: Dlugos
+    given-names: Dennis
+  - family-names: Litt
+    given-names: Brian
+  year: 2007
+  journal: Clinical Neurophysiology
+  volume: 118
+  issue: '5'
+  start: '1134'
+  end: '1143'
+  doi: 10.1016/j.clinph.2006.12.019
+- type: article
+  title: Quantitative Analysis of High-Frequency Oscillations (80–500 Hz) Recorded in Human Epileptic Hippocampus and Entorhinal Cortex
+  authors:
+  - family-names: Staba
+    given-names: Richard J.
+  - family-names: Wilson
+    given-names: Charles L.
+  - family-names: Bragin
+    given-names: Anatol
+  - family-names: Fried
+    given-names: Itzhak
+  - family-names: Engel
+    given-names: Jerome
+  year: 2002
+  journal: Journal of Neurophysiology
+  volume: 88
+  issue: '4'
+  start: '1743'
+  end: '1752'
+  doi: 10.1152/jn.2002.88.4.1743
+- type: article
+  title: 'The CS algorithm: A novel method for high frequency oscillation detection in EEG'
+  authors:
+  - family-names: Cimbálník
+    given-names: Jan
+  - family-names: Hewitt
+    given-names: Angela
+  - family-names: Worrell
+    given-names: Greg
+  - family-names: Stead
+    given-names: Matt
+  year: 2018
+  journal: Journal of Neuroscience Methods
+  volume: 293
+  start: '6'
+  end: '16'
+  doi: 10.1016/j.jneumeth.2017.08.023
+- type: article
+  title: A comparison between detectors of high frequency oscillations
+  authors:
+  - family-names: Zelmann
+    given-names: R.
+  - family-names: Mari
+    given-names: F.
+  - family-names: Jacobs
+    given-names: J.
+  - family-names: Zijlmans
+    given-names: M.
+  - family-names: Dubeau
+    given-names: F.
+  - family-names: Gotman
+    given-names: J.
+  year: 2012
+  journal: Clinical Neurophysiology
+  volume: 123
+  issue: '1'
+  start: '106'
+  end: '116'
+  doi: 10.1016/j.clinph.2011.06.006
+- type: article
+  title: MEG and EEG data analysis with MNE-Python
+  authors:
+  - family-names: Gramfort
+    given-names: Alexandre
+  - family-names: Luessi
+    given-names: Martin
+  - family-names: Larson
+    given-names: Eric
+  - family-names: Engemann
+    given-names: Denis A.
+  - family-names: Strohmeier
+    given-names: Daniel
+  - family-names: Brodbeck
+    given-names: Christian
+  - family-names: Goj
+    given-names: Roman
+  - family-names: Jas
+    given-names: Mainak
+  - family-names: Brooks
+    given-names: Teon
+  - family-names: Parkkonen
+    given-names: Lauri
+  - family-names: Hämäläinen
+    given-names: Matti
+  year: 2013
+  journal: Frontiers in Neuroscience
+  volume: 7
+  start: '267'
+  doi: 10.3389/fnins.2013.00267
+- type: article
+  title: 'iEEG-BIDS, extending the Brain Imaging Data Structure specification to human intracranial electrophysiology'
+  authors:
+  - family-names: Holdgraf
+    given-names: Christopher
+  - family-names: Appelhoff
+    given-names: Stefan
+  - family-names: Bickel
+    given-names: Stephan
+  - family-names: Bouchard
+    given-names: Kristofer
+  - family-names: D’Ambrosio
+    given-names: Sasha
+  - family-names: David
+    given-names: Olivier
+  - family-names: Devinsky
+    given-names: Orrin
+  - family-names: Dichter
+    given-names: Benjamin
+  - family-names: Flinker
+    given-names: Adeen
+  - family-names: Foster
+    given-names: Brett L.
+  - family-names: Gorgolewski
+    given-names: Krzysztof J.
+  - family-names: Groen
+    given-names: Iris
+  - family-names: Groppe
+    given-names: David
+  - family-names: Gunduz
+    given-names: Aysegul
+  - family-names: Hamilton
+    given-names: Liberty
+  - family-names: Honey
+    given-names: Christopher J.
+  - family-names: Jas
+    given-names: Mainak
+  - family-names: Knight
+    given-names: Robert
+  - family-names: Lachaux
+    given-names: Jean-Philippe
+  - family-names: Lau
+    given-names: Jonathan C.
+  - family-names: Lee-Messer
+    given-names: Christopher
+  - family-names: Lundstrom
+    given-names: Brian N.
+  - family-names: Miller
+    given-names: Kai J.
+  - family-names: Ojemann
+    given-names: Jeffrey G.
+  - family-names: Oostenveld
+    given-names: Robert
+  - family-names: Petridou
+    given-names: Natalia
+  - family-names: Piantoni
+    given-names: Gio
+  - family-names: Pigorini
+    given-names: Andrea
+  - family-names: Pouratian
+    given-names: Nader
+  - family-names: Ramsey
+    given-names: Nick F.
+  - family-names: Stolk
+    given-names: Arjen
+  - family-names: Swann
+    given-names: Nicole C.
+  - family-names: Tadel
+    given-names: François
+  - family-names: Voytek
+    given-names: Bradley
+  - family-names: Wandell
+    given-names: Brian A.
+  - family-names: Winawer
+    given-names: Jonathan
+  - family-names: Whitaker
+    given-names: Kirstie
+  - family-names: Zehl
+    given-names: Lyuba
+  - family-names: Hermes
+    given-names: Dora
+  year: 2019
+  journal: Scientific Data
+  volume: 6
+  issue: '1'
+  start: '102'
+  doi: 10.1038/s41597-019-0105-7
+- type: software
+  title: 'epycom: ElectroPhYsiology COmputational Module'
+  authors:
+  - name: International Clinical Research Center, St. Anne's University Hospital Brno (FNUSA-ICRC), Biomedical Engineering
+  version: '0.3'
+  repository-code: https://github.com/ICRC-BME/epycom
+  url: https://pypi.org/project/epycom/0.3/
+  license: Apache-2.0
+- type: data
+  title: Multi-Expert Seizure Annotation
+  authors:
+  - family-names: Ojemann
+    given-names: William K
+  - family-names: Zhou
+    given-names: Daniel
+  - family-names: Armstrong
+    given-names: Caren
+  - family-names: Sinha
+    given-names: Nishant
+  - family-names: Litt
+    given-names: Brian
+  - family-names: Conrad
+    given-names: Erin
+  year: 2026
+  publisher:
+    name: Pennsieve Discover
+  doi: 10.26275/dely-fzwx
+  license: CC-BY-4.0
