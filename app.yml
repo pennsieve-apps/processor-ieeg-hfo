@@ -110,7 +110,9 @@ parameters:
   - name: THREADS
     type: integer
     label: Parallel workers
-    description: Channels analysed in parallel; 0 = one per vCPU.
+    description: >-
+      Channels analysed in parallel; 0 = one per vCPU the container is given (its cgroup CPU
+      quota, not the host's CPU count), fewer when ~320 MB per worker would not fit its memory.
     defaultValue: 0
     min: 0
   - name: LABEL
@@ -124,6 +126,11 @@ inputs:
       The BIDS-iEEG derivative of ieeg-prep (recordings.csv, *_desc-preproc_ieeg.edf with
       channels.tsv and events.tsv), or any BIDS-iEEG dataset, or plain EDF/BDF/BrainVision/FIF/
       EEGLAB files. Sampled at >= MIN_SFREQ to be analysed. Folders and symlinks are followed.
+    mediaTypes:
+      - application/edf
+      - text/csv
+      - text/tab-separated-values
+      - application/json
     placement: root
     required: true
 outputs:

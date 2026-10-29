@@ -27,6 +27,7 @@ from datetime import datetime, timezone
 from importlib import metadata as importlib_metadata
 from pathlib import Path
 
+from processor import resources as R
 from processor import detect as D
 from processor import ieeg as I
 
@@ -62,13 +63,11 @@ def tool_versions() -> dict[str, str]:
     return out
 
 
-def cpu_count() -> int:
-    try:
-        from joblib import cpu_count as jc
-
-        return max(1, jc(only_physical_cores=False))
-    except Exception:  # noqa: BLE001
-        return max(1, os.cpu_count() or 1)
+# Memory per parallel worker (a loky process holding one channel of a window) and for the main
+# process (the window of every good channel), measured on a 186-channel, 1024 Hz demo clip:
+# peak 0.75 GB with THREADS=1, 1.7 GB with 4.
+WORKER_MB = 320
+MAIN_MB = 850
 
 
 def _bool(name: str, value: str) -> bool:
@@ -135,7 +134,7 @@ def env_params() -> dict:
     threads = int(raw["THREADS"])
     if threads < 0:
         raise ValueError("THREADS must be >= 0 (0 = every vCPU)")
-    p["threads"] = threads or cpu_count()
+    p["threads"], p["threads_why"] = R.resolve_workers(threads, WORKER_MB, MAIN_MB)
     if p["LABEL"] and not all(c.isalnum() or c in "-_" for c in p["LABEL"]):
         raise ValueError("LABEL may hold letters, digits, - and _ only")
     return p
@@ -264,6 +263,7 @@ def main() -> int:
              f", window {params['window_ms']:g} ms" if params["window_ms"] else "", ",".join(params["bands"]),
              params["SEGMENT"],
              f"excluded (margin {params['margin']:g} s)" if params["exclude_seizure"] else "kept", params["threads"])
+    log.info("parallel workers: %d (%s)", params["threads"], params["threads_why"])
     for p in problems:
         log.warning("%s: %s", p["input"], p["reason"])
 
@@ -332,7 +332,7 @@ def main() -> int:
                                               "WINDOW_MS", "MIN_DURATION_MS", "SEGMENT", "EXCLUDE_SEIZURE",
                                               "SEIZURE_MARGIN_S", "WINDOW_S", "THREADS", "LABEL")},
         "resolved": {"threshold": params["threshold"], "window_ms": params["window_ms"],
-                     "threads": params["threads"]},
+                     "threads": params["threads"], "threads_why": params["threads_why"]},
         "inputs": seen, "status": status,
         "started": started.isoformat(timespec="seconds"),
         "seconds": round(time.monotonic() - t_start, 2),

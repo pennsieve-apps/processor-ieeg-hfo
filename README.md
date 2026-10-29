@@ -45,7 +45,7 @@ background; run more than one (`LABEL`) when it matters. Outputs are long-format
 | `EXCLUDE_SEIZURE` | `true` | Leave known seizures out (`onset_s` of `recordings.csv`, `seizure` events; `ictal` too for plain BIDS), with `SEIZURE_MARGIN_S` on both sides; to the end of the recording when the seizure's end is unknown. `artifact` events are always left out. |
 | `SEIZURE_MARGIN_S` | `10` | Seconds left out before the onset and after the end of each seizure. |
 | `WINDOW_S` | `300` | Windows the recording is read and analysed in: all good channels at once, plus 2 s of context on each side. Detection thresholds are computed per channel and window. |
-| `THREADS` | `0` | Channels analysed in parallel (processes); `0` = one per vCPU. |
+| `THREADS` | `0` | Channels analysed in parallel (processes); `0` = one per vCPU the container is given (cgroup CPU quota, else CPU affinity, else the CPU count), capped so that ~320 MB per worker plus ~850 MB for the main process fit the memory limit. The number chosen and why are logged and kept in `provenance.json`. |
 | `LABEL` | (empty) | When set, write to `OUTPUT_DIR/<LABEL>/` (e.g. one run per detector). |
 
 ## Outputs
