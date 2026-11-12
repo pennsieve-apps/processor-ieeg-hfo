@@ -1,5 +1,6 @@
 cff-version: "1.2.0"
-message: If you use this app, please cite it and the works it builds on, listed under references.
+message: >-
+  If you use this app, please cite the work it implements (preferred-citation), this release, and Pennsieve (RRID:SCR_021677); the other works it builds on are listed under references.
 type: software
 title: iEEG HFO
 abstract: 'Detects high-frequency oscillations (ripples and fast ripples) on every good channel of intracranial EEG with epycom''s line-length, RMS or CS detector and writes the events and rates per channel; recordings sampled below 1000 Hz are skipped by design.'
@@ -16,6 +17,28 @@ keywords:
 - neuroscience
 - hfo
 - event-detection
+# The work this app implements; the release report's "How to cite" puts it first.
+preferred-citation:
+  type: article
+  title: Human and automated detection of high-frequency oscillations in clinical intracranial EEG recordings
+  authors:
+  - family-names: Gardner
+    given-names: Andrew B.
+  - family-names: Worrell
+    given-names: Greg A.
+  - family-names: Marsh
+    given-names: Eric
+  - family-names: Dlugos
+    given-names: Dennis
+  - family-names: Litt
+    given-names: Brian
+  year: 2007
+  journal: Clinical Neurophysiology
+  volume: 118
+  issue: '5'
+  start: '1134'
+  end: '1143'
+  doi: 10.1016/j.clinph.2006.12.019
 references:
 - type: article
   title: Human and automated detection of high-frequency oscillations in clinical intracranial EEG recordings
